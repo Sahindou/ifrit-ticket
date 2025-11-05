@@ -1,17 +1,18 @@
 # Architecture
 
 src/
-├── config/
-│   ├── env.ts                    # Variables d'environnement
-│   ├── database.ts               # Configuration Drizzle
-│   └── app.ts                    # Configuration Express
-├── database/
-│   ├── schema/                   # Schémas Drizzle
-│   │   ├── users.schema.ts
-│   │   ├── products.schema.ts
-│   │   └── index.ts
-│   ├── migrations/               # Migrations Drizzle
-│   └── seed.ts                   # Données de test
+|__ core/
+|   ├── config/
+|   │   ├── env.ts                    # Variables d'environnement
+|   │   ├── database.ts               # Configuration Drizzle
+|   │   └── app.ts                    # Configuration Express
+|   ├── database/
+|   │   ├── schema/                   # Schémas Drizzle
+|   │   │   ├── users.schema.ts
+|   │   │   ├── products.schema.ts
+|   │   │   └── index.ts
+|   │   ├── migrations/               # Migrations Drizzle
+|   │   └── seed.ts                   # Données de test
 ├── features/
 │   ├── users/
 │   │   ├── user.routes.ts
