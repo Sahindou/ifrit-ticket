@@ -26,6 +26,7 @@ src/
 │       ├── product.controller.ts
 │       ├── product.service.ts
 │       └── product.repository.ts
+|       |__ product.zod.ts
 ├── shared/
 │   ├── middlewares/
 │   │   ├── errorHandler.ts
