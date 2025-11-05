@@ -1,53 +1,42 @@
 # Architecture
 
 src/
-├── api/
-│   ├── routes/
-│   │   └── index.ts              # Point d'entrée des routes
-│   ├── middlewares/
-│   │   ├── auth.middleware.ts
-│   │   ├── errorHandler.middleware.ts
-│   │   └── validation.middleware.ts
-│   └── controllers/
-│       ├── user.controller.ts
-│       └── product.controller.ts
-│
-├── features/                      # Modules métier (grosses features)
+├── config/
+│   ├── env.ts                    # Variables d'environnement
+│   ├── database.ts               # Configuration Drizzle
+│   └── app.ts                    # Configuration Express
+├── database/
+│   ├── schema/                   # Schémas Drizzle
+│   │   ├── users.schema.ts
+│   │   ├── products.schema.ts
+│   │   └── index.ts
+│   ├── migrations/               # Migrations Drizzle
+│   └── seed.ts                   # Données de test
+├── features/
 │   ├── users/
+│   │   ├── user.routes.ts
+│   │   ├── user.controller.ts
 │   │   ├── user.service.ts
 │   │   ├── user.repository.ts
-│   │   ├── user.model.ts
-│   │   ├── user.types.ts
-│   │   └── user.validation.ts
-│   │
+│   │   ├── user.zod.ts          # zod/validation
+│   │   └── user.types.ts
 │   └── products/
+│       ├── product.routes.ts
+│       ├── product.controller.ts
 │       ├── product.service.ts
-│       ├── product.repository.ts
-│       ├── product.model.ts
-│       └── product.types.ts
-│
-├── shared/                        # Code partagé
-│   ├── services/
-│   │   ├── email.service.ts
-│   │   └── storage.service.ts
+│       └── product.repository.ts
+├── shared/
+│   ├── middlewares/
+│   │   ├── errorHandler.ts
+│   │   ├── auth.ts
+│   │   └── validation.ts
 │   ├── utils/
-│   │   ├── logger.ts
-│   │   └── helpers.ts
+│   │   ├── ApiError.ts
+│   │   └── asyncHandler.ts
 │   └── types/
-│       └── common.types.ts
-│
-├── core/                          # Configuration & initialisation
-│   ├── config/
-│   │   ├── database.ts
-│   │   ├── env.ts
-│   │   └── app.ts
-│   ├── loaders/
-│   │   ├── express.loader.ts
-│   │   ├── database.loader.ts
-│   │   └── index.ts
-│   └── errors/
-│       ├── AppError.ts
-│       └── errorCodes.ts
-│
-├── app.ts                         # Point d'entrée
-└── server.ts                      # Démarrage du serveur
+│       └── express.d.ts
+├── loaders/
+│   ├── express.loader.ts
+│   └── index.ts
+├── app.ts
+└── server.ts
