@@ -18,19 +18,12 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   // Route de base pour vérifier que le serveur fonctionne
   res.json({
-    message: "✅ Planity Coiff API - Serveur en ligne",
+    message: "✅ Ifrit tickets - API en ligne",
     version: "1.0.0",
-    documentation: `http://localhost:${env.PORT}/api-docs`,
+    documentation: "non disponible",
     endpoints: {
-      auth: "/auth",
-      users: "/users",
-      prestations: "/prestations",
-      categories: "/categories",
-      reservations: "/reservations",
-      employees: "/employees",
-      horaires: "/horaires",
-      slots: "/slots",
-      products: "/products",
+      // auth: "/auth",
+      // users: "/users",
     },
   });
 });
