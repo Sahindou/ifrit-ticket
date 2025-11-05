@@ -7,7 +7,7 @@ import { TicketTable } from '@/components/tickets/TicketTable';
 import { TicketForm } from '@/components/tickets/TicketForm';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Plus, ExternalLink } from 'lucide-react';
+import { Plus, ExternalLink, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
@@ -109,6 +109,12 @@ const Index = () => {
               <Link to="/ticket">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Page Client
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/kanban">
+                <LayoutGrid className="mr-2 h-4 w-4" />
+                Vue Kanban
               </Link>
             </Button>
             <Button onClick={() => {
