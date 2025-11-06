@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "@/features/tickets/dashboard/Dashboard";
 import NotFound from "@/components/errors/NotFound";
-import PublicTicket from "@/pages/PublicTicket";
-import Kanban from "@/pages/Kanban";
+import PublicTicket from "@/features/tickets/public/PublicTicket";
+import Kanban from "@/features/tickets/kanban/Kanban";
 
 const Router = () => {
   return (
