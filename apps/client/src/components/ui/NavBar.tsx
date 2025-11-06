@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, ExternalLink, LayoutGrid } from "lucide-react";
+import { Plus, ExternalLink, LayoutGrid, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Ticket } from "@/types/ticket";
 
@@ -18,6 +18,12 @@ const NavBar = ({ setEditingTicket, setIsFormOpen }: NavBarProps) => {
         </p>
       </div>
       <div className="flex gap-2">
+        <Button variant="outline" asChild>
+          <Link to="/">
+            <Home className="mr-2 h-4 w-4" />
+            Dashboard
+          </Link>
+        </Button>
         <Button variant="outline" asChild>
           <Link to="/ticket">
             <ExternalLink className="mr-2 h-4 w-4" />

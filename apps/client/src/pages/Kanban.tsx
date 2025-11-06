@@ -13,11 +13,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  NavBar,
+} from "@/components/ui/";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TicketForm } from "@/components/tickets/TicketForm";
 import { toast } from "sonner";
+
 
 const statusLabels: Record<TicketStatus, string> = {
   todo: "À faire",
@@ -98,22 +100,11 @@ const Kanban = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" asChild>
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-4xl font-bold">Vue Kanban</h1>
-              <p className="text-muted-foreground mt-1">
-                Glissez-déposez les tickets pour changer leur statut
-              </p>
-            </div>
-          </div>
-        </div>
-
+        
+        <NavBar
+          setEditingTicket={setEditingTicket}
+          setIsFormOpen={setIsFormOpen}
+        />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {columns.map((status) => (
             <div
