@@ -1,19 +1,28 @@
-import { useState } from 'react';
-import type { Ticket, TicketStatus } from '@/types/ticket';
-import { mockTickets } from '@/data/mockTickets';
-import { TypeBadge, PriorityBadge } from '@/components/tickets/TicketBadges';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { TicketForm } from '@/components/tickets/TicketForm';
-import { toast } from 'sonner';
+import { useState } from "react";
+import type { Ticket, TicketStatus } from "@/types/ticket";
+import { mockTickets } from "@/data/mockTickets";
+import { TypeBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { TicketForm } from "@/components/tickets/TicketForm";
+import { toast } from "sonner";
 
 const statusLabels: Record<TicketStatus, string> = {
-  todo: 'À faire',
-  in_progress: 'En cours',
-  done: 'Terminé',
+  todo: "À faire",
+  in_progress: "En cours",
+  done: "Terminé",
 };
 
 const Kanban = () => {
@@ -23,7 +32,7 @@ const Kanban = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const getTicketsByStatus = (status: TicketStatus) => {
-    return tickets.filter(ticket => ticket.status === status);
+    return tickets.filter((ticket) => ticket.status === status);
   };
 
   const handleEdit = (ticket: Ticket) => {
@@ -32,37 +41,45 @@ const Kanban = () => {
   };
 
   const handleDelete = (id: string) => {
-    setTickets(tickets.filter(t => t.id !== id));
-    toast.success('Ticket supprimé avec succès');
+    setTickets(tickets.filter((t) => t.id !== id));
+    toast.success("Ticket supprimé avec succès");
     setDeleteId(null);
   };
 
-  const handleCreateOrUpdate = (ticketData: Omit<Ticket, 'id' | 'created_at'>) => {
+  const handleCreateOrUpdate = (
+    ticketData: Omit<Ticket, "id" | "created_at">
+  ) => {
     if (editingTicket) {
-      setTickets(tickets.map(t => 
-        t.id === editingTicket.id 
-          ? { ...ticketData, id: editingTicket.id, created_at: editingTicket.created_at }
-          : t
-      ));
-      toast.success('Ticket mis à jour avec succès');
+      setTickets(
+        tickets.map((t) =>
+          t.id === editingTicket.id
+            ? {
+                ...ticketData,
+                id: editingTicket.id,
+                created_at: editingTicket.created_at,
+              }
+            : t
+        )
+      );
+      toast.success("Ticket mis à jour avec succès");
       setEditingTicket(undefined);
     }
   };
 
   const handleDragStart = (e: React.DragEvent, ticket: Ticket) => {
-    e.dataTransfer.setData('ticketId', ticket.id);
+    e.dataTransfer.setData("ticketId", ticket.id);
   };
 
   const handleDrop = (e: React.DragEvent, newStatus: TicketStatus) => {
     e.preventDefault();
-    const ticketId = e.dataTransfer.getData('ticketId');
-    
-    setTickets(tickets.map(ticket => 
-      ticket.id === ticketId 
-        ? { ...ticket, status: newStatus }
-        : ticket
-    ));
-    toast.success('Statut mis à jour');
+    const ticketId = e.dataTransfer.getData("ticketId");
+
+    setTickets(
+      tickets.map((ticket) =>
+        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
+      )
+    );
+    toast.success("Statut mis à jour");
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -70,10 +87,13 @@ const Kanban = () => {
   };
 
   const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString();
+    return (
+      new Date(dueDate) < new Date() &&
+      new Date(dueDate).toDateString() !== new Date().toDateString()
+    );
   };
 
-  const columns: TicketStatus[] = ['todo', 'in_progress', 'done'];
+  const columns: TicketStatus[] = ["todo", "in_progress", "done"];
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -87,7 +107,9 @@ const Kanban = () => {
             </Button>
             <div>
               <h1 className="text-4xl font-bold">Vue Kanban</h1>
-              <p className="text-muted-foreground mt-1">Glissez-déposez les tickets pour changer leur statut</p>
+              <p className="text-muted-foreground mt-1">
+                Glissez-déposez les tickets pour changer leur statut
+              </p>
             </div>
           </div>
         </div>
@@ -116,14 +138,16 @@ const Kanban = () => {
                     draggable
                     onDragStart={(e) => handleDragStart(e, ticket)}
                     className={`p-4 cursor-move hover:shadow-md transition-shadow ${
-                      isOverdue(ticket.due_date) && ticket.status !== 'done'
-                        ? 'border-destructive bg-destructive/5'
-                        : ''
+                      isOverdue(ticket.due_date) && ticket.status !== "done"
+                        ? "border-destructive bg-destructive/5"
+                        : ""
                     }`}
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-medium text-sm line-clamp-2">{ticket.title}</h3>
+                        <h3 className="font-medium text-sm line-clamp-2">
+                          {ticket.title}
+                        </h3>
                         <div className="flex gap-1 flex-shrink-0">
                           <Button
                             variant="ghost"
@@ -154,8 +178,18 @@ const Kanban = () => {
                       </div>
 
                       <div className="text-xs text-muted-foreground">
-                        <span className={isOverdue(ticket.due_date) && ticket.status !== 'done' ? 'text-destructive font-medium' : ''}>
-                          Échéance: {new Date(ticket.due_date).toLocaleDateString('fr-FR')}
+                        <span
+                          className={
+                            isOverdue(ticket.due_date) &&
+                            ticket.status !== "done"
+                              ? "text-destructive font-medium"
+                              : ""
+                          }
+                        >
+                          Échéance:{" "}
+                          {new Date(ticket.due_date).toLocaleDateString(
+                            "fr-FR"
+                          )}
                         </span>
                       </div>
                     </div>
@@ -187,12 +221,15 @@ const Kanban = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Supprimer le ticket</AlertDialogTitle>
               <AlertDialogDescription>
-                Êtes-vous sûr de vouloir supprimer ce ticket ? Cette action est irréversible.
+                Êtes-vous sûr de vouloir supprimer ce ticket ? Cette action est
+                irréversible.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={() => deleteId && handleDelete(deleteId)}>
+              <AlertDialogAction
+                onClick={() => deleteId && handleDelete(deleteId)}
+              >
                 Supprimer
               </AlertDialogAction>
             </AlertDialogFooter>
