@@ -15,11 +15,9 @@ import {
   AlertDialogTitle,
   NavBar,
 } from "@/components/ui/";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Pencil, Trash2 } from "lucide-react";
 import { TicketForm } from "@/components/tickets/TicketForm";
 import { toast } from "sonner";
-
 
 const statusLabels: Record<TicketStatus, string> = {
   todo: "À faire",
@@ -100,7 +98,6 @@ const Kanban = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        
         <NavBar
           setEditingTicket={setEditingTicket}
           setIsFormOpen={setIsFormOpen}
