@@ -8,12 +8,12 @@ interface TicketStatsProps {
 
 export const TicketStats = ({ tickets }: TicketStatsProps) => {
   const total = tickets.length;
-  const inProgress = tickets.filter((t) => t.status === "in_progress").length;
+  const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
   const overdue = tickets.filter((t) => {
     const dueDate = new Date(t.due_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return dueDate < today && t.status !== "done";
+    return dueDate < today && t.status !== "DONE";
   }).length;
 
   const stats = [
