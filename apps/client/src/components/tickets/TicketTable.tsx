@@ -1,4 +1,5 @@
 import type { Ticket } from '@/types/ticket';
+import type { TypeTicket } from '@/types/';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { TypeBadge, PriorityBadge, StatusBadge } from './TicketBadges';
@@ -7,18 +8,24 @@ import { format } from 'date-fns';
 
 interface TicketTableProps {
   tickets: Ticket[];
+  typeTickets?: TypeTicket[];
   onEdit: (ticket: Ticket) => void;
   onDelete: (id: string) => void;
   onStatusChange: (id: string) => void;
   onSort: (field: keyof Ticket) => void;
 }
 
-export const TicketTable = ({ tickets, onEdit, onDelete, onStatusChange, onSort }: TicketTableProps) => {
+export const TicketTable = ({ tickets, typeTickets, onEdit, onDelete, onStatusChange, onSort }: TicketTableProps) => {
   const isOverdue = (ticket: Ticket) => {
     const dueDate = new Date(ticket.due_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return dueDate < today && ticket.status !== 'done';
+  };
+
+  const getTypeName = (typeId: string | null) => {
+    if (!typeId || !typeTickets) return undefined;
+    return typeTickets.find(t => t.id === typeId)?.name;
   };
 
   return (
@@ -66,7 +73,7 @@ export const TicketTable = ({ tickets, onEdit, onDelete, onStatusChange, onSort 
                   )}
                 </TableCell>
                 <TableCell>
-                  <TypeBadge type={ticket.type} />
+                  <TypeBadge typeId={ticket.type_id} typeName={getTypeName(ticket.type_id)} />
                 </TableCell>
                 <TableCell>
                   <PriorityBadge priority={ticket.priority} />
