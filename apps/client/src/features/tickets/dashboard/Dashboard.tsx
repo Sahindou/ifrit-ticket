@@ -1,18 +1,17 @@
 import { useState, useMemo } from 'react';
-import type { Ticket, TicketType, TicketStatus } from '@/types/ticket';
-import { mockTickets } from '@/data/mockTickets';
+import type { Ticket, TicketStatus, TicketCreateOrUpdate } from '@/types/ticket';
 import { TicketStats } from '@/components/tickets/TicketStats';
 import { TicketFilters } from '@/components/tickets/TicketFilters';
 import { TicketTable } from '@/components/tickets/TicketTable';
 import { TicketForm } from '@/components/tickets/TicketForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, NavBar } from '@/components/ui/';
 import { toast } from 'sonner';
-
+import { useTickets, useCreateTicket, useUpdateTicket, useDeleteTicket } from '../hooks/useTicket';
+import { useTypeTickets } from '@/features/type-tickets/hooks/useTypeTicket';
 
 const Dashboard = () => {
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<TicketType | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<string | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [sortField, setSortField] = useState<keyof Ticket>('due_date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -20,10 +19,20 @@ const Dashboard = () => {
   const [editingTicket, setEditingTicket] = useState<Ticket | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const { data: tickets, isLoading } = useTickets();
+  const { data: typeTickets } = useTypeTickets();
+  const createTicketMutation = useCreateTicket();
+  const updateTicketMutation = useUpdateTicket();
+  const deleteTicketMutation = useDeleteTicket();
+
+
+  
   const filteredAndSortedTickets = useMemo(() => {
+   if (!tickets) return [];
+
     let filtered = tickets.filter(ticket => {
       const matchesSearch = ticket.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === 'all' || ticket.type === typeFilter;
+      const matchesType = typeFilter === 'all' || ticket.type_id === typeFilter;
       const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
       return matchesSearch && matchesType && matchesStatus;
     });
@@ -32,6 +41,10 @@ const Dashboard = () => {
       const aValue = a[sortField];
       const bValue = b[sortField];
       const direction = sortDirection === 'asc' ? 1 : -1;
+      
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return 1 * direction;
+      if (bValue == null) return -1 * direction;
       
       if (aValue < bValue) return -1 * direction;
       if (aValue > bValue) return 1 * direction;
@@ -50,23 +63,33 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreateOrUpdate = (ticketData: Omit<Ticket, 'id' | 'created_at'>) => {
+  const handleCreateOrUpdate = (ticketData: TicketCreateOrUpdate) => {
     if (editingTicket) {
-      setTickets(tickets.map(t => 
-        t.id === editingTicket.id 
-          ? { ...ticketData, id: editingTicket.id, created_at: editingTicket.created_at }
-          : t
-      ));
-      toast.success('Ticket updated successfully');
-      setEditingTicket(undefined);
+      updateTicketMutation.mutate(
+        { id: editingTicket.id, data: ticketData },
+        {
+          onSuccess: () => {
+            toast.success('Ticket updated successfully');
+            setEditingTicket(undefined);
+            setIsFormOpen(false);
+          },
+          onError: (error) => {
+            toast.error('Failed to update ticket');
+            console.error(error);
+          }
+        }
+      );
     } else {
-      const newTicket: Ticket = {
-        ...ticketData,
-        id: Date.now().toString(),
-        created_at: new Date().toISOString().split('T')[0],
-      };
-      setTickets([newTicket, ...tickets]);
-      toast.success('Ticket created successfully');
+      createTicketMutation.mutate(ticketData, {
+        onSuccess: () => {
+          toast.success('Ticket created successfully');
+          setIsFormOpen(false);
+        },
+        onError: (error) => {
+          toast.error('Failed to create ticket');
+          console.error(error);
+        }
+      });
     }
   };
 
@@ -76,23 +99,59 @@ const Dashboard = () => {
   };
 
   const handleDelete = (id: string) => {
-    setTickets(tickets.filter(t => t.id !== id));
-    toast.success('Ticket deleted successfully');
-    setDeleteId(null);
+    deleteTicketMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success('Ticket deleted successfully');
+        setDeleteId(null);
+      },
+      onError: (error) => {
+        toast.error('Failed to delete ticket');
+        console.error(error);
+      }
+    });
   };
 
   const handleStatusChange = (id: string) => {
-    setTickets(tickets.map(ticket => {
-      if (ticket.id === id) {
-        const statusCycle: TicketStatus[] = ['todo', 'in_progress', 'done'];
-        const currentIndex = statusCycle.indexOf(ticket.status);
-        const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-        return { ...ticket, status: nextStatus };
+    if (!tickets) return;
+    const ticket = tickets.find(t => t.id === id);
+    if (!ticket) return;
+
+    const statusCycle: TicketStatus[] = ['TO_DO', 'IN_PROGRESS', 'DONE'];
+    const currentIndex = statusCycle.indexOf(ticket.status);
+    const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
+
+    const updatedData: TicketCreateOrUpdate = {
+      title: ticket.title,
+      description: ticket.description,
+      priority: ticket.priority,
+      status: nextStatus,
+      due_date: ticket.due_date,
+      type_id: ticket.type_id,
+    };
+
+    updateTicketMutation.mutate(
+      { id, data: updatedData },
+      {
+        onSuccess: () => {
+          toast.success('Status updated');
+        },
+        onError: (error) => {
+          toast.error('Failed to update status');
+          console.error(error);
+        }
       }
-      return ticket;
-    }));
-    toast.success('Status updated');
+    );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading tickets...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -102,7 +161,7 @@ const Dashboard = () => {
           setIsFormOpen={setIsFormOpen}
         />
 
-        <TicketStats tickets={tickets} />
+        <TicketStats tickets={tickets || []} />
 
         <TicketFilters
           searchQuery={searchQuery}
@@ -111,10 +170,12 @@ const Dashboard = () => {
           onTypeFilterChange={setTypeFilter}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
+          typeTickets={typeTickets}
         />
 
         <TicketTable
           tickets={filteredAndSortedTickets}
+          typeTickets={typeTickets}
           onEdit={handleEdit}
           onDelete={(id) => setDeleteId(id)}
           onStatusChange={handleStatusChange}
@@ -129,6 +190,7 @@ const Dashboard = () => {
           }}
           onSubmit={handleCreateOrUpdate}
           ticket={editingTicket}
+          typeTickets={typeTickets}
         />
 
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

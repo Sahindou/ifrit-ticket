@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { Ticket, TicketStatus } from "@/types/ticket";
-import { mockTickets } from "@/data/mockTickets";
+import type { Ticket, TicketStatus, TicketCreateOrUpdate } from "@/types/ticket";
+import type { TypeTicket } from "@/types/";
 import { TypeBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,21 +18,33 @@ import {
 import { Pencil, Trash2 } from "lucide-react";
 import { TicketForm } from "@/components/tickets/TicketForm";
 import { toast } from "sonner";
+import { useTickets, useUpdateTicket, useDeleteTicket } from "../hooks/useTicket";
+import { useTypeTickets } from "@/features/type-tickets/hooks/useTypeTicket";
 
 const statusLabels: Record<TicketStatus, string> = {
-  todo: "À faire",
-  in_progress: "En cours",
-  done: "Terminé",
+  TO_DO: "À faire",
+  IN_PROGRESS: "En cours",
+  DONE: "Terminé",
 };
 
 const Kanban = () => {
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const { data: tickets, isLoading } = useTickets();
+  const { data: typeTickets } = useTypeTickets();
+  const updateTicketMutation = useUpdateTicket();
+  const deleteTicketMutation = useDeleteTicket();
+
   const getTicketsByStatus = (status: TicketStatus) => {
+    if (!tickets) return [];
     return tickets.filter((ticket) => ticket.status === status);
+  };
+
+  const getTypeName = (typeId: string | null) => {
+    if (!typeId || !typeTickets) return undefined;
+    return typeTickets.find(t => t.id === typeId)?.name;
   };
 
   const handleEdit = (ticket: Ticket) => {
@@ -41,28 +53,34 @@ const Kanban = () => {
   };
 
   const handleDelete = (id: string) => {
-    setTickets(tickets.filter((t) => t.id !== id));
-    toast.success("Ticket supprimé avec succès");
-    setDeleteId(null);
+    deleteTicketMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success("Ticket supprimé avec succès");
+        setDeleteId(null);
+      },
+      onError: (error) => {
+        toast.error("Échec de la suppression du ticket");
+        console.error(error);
+      }
+    });
   };
 
-  const handleCreateOrUpdate = (
-    ticketData: Omit<Ticket, "id" | "created_at">
-  ) => {
+  const handleCreateOrUpdate = (ticketData: TicketCreateOrUpdate) => {
     if (editingTicket) {
-      setTickets(
-        tickets.map((t) =>
-          t.id === editingTicket.id
-            ? {
-                ...ticketData,
-                id: editingTicket.id,
-                created_at: editingTicket.created_at,
-              }
-            : t
-        )
+      updateTicketMutation.mutate(
+        { id: editingTicket.id, data: ticketData },
+        {
+          onSuccess: () => {
+            toast.success("Ticket mis à jour avec succès");
+            setEditingTicket(undefined);
+            setIsFormOpen(false);
+          },
+          onError: (error) => {
+            toast.error("Échec de la mise à jour du ticket");
+            console.error(error);
+          }
+        }
       );
-      toast.success("Ticket mis à jour avec succès");
-      setEditingTicket(undefined);
     }
   };
 
@@ -74,12 +92,31 @@ const Kanban = () => {
     e.preventDefault();
     const ticketId = e.dataTransfer.getData("ticketId");
 
-    setTickets(
-      tickets.map((ticket) =>
-        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-      )
+    if (!tickets) return;
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    const updatedData: TicketCreateOrUpdate = {
+      title: ticket.title,
+      description: ticket.description,
+      priority: ticket.priority,
+      status: newStatus,
+      due_date: ticket.due_date,
+      type_id: ticket.type_id,
+    };
+
+    updateTicketMutation.mutate(
+      { id: ticketId, data: updatedData },
+      {
+        onSuccess: () => {
+          toast.success("Statut mis à jour");
+        },
+        onError: (error) => {
+          toast.error("Échec de la mise à jour du statut");
+          console.error(error);
+        }
+      }
     );
-    toast.success("Statut mis à jour");
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -93,7 +130,17 @@ const Kanban = () => {
     );
   };
 
-  const columns: TicketStatus[] = ["todo", "in_progress", "done"];
+  const columns: TicketStatus[] = ["TO_DO", "IN_PROGRESS", "DONE"];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Chargement des tickets...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -126,7 +173,7 @@ const Kanban = () => {
                     draggable
                     onDragStart={(e) => handleDragStart(e, ticket)}
                     className={`p-4 cursor-move hover:shadow-md transition-shadow ${
-                      isOverdue(ticket.due_date) && ticket.status !== "done"
+                      isOverdue(ticket.due_date) && ticket.status !== "DONE"
                         ? "border-destructive bg-destructive/5"
                         : ""
                     }`}
@@ -161,7 +208,7 @@ const Kanban = () => {
                       </p>
 
                       <div className="flex flex-wrap gap-2">
-                        <TypeBadge type={ticket.type} />
+                        <TypeBadge typeId={ticket.type_id} typeName={getTypeName(ticket.type_id)} />
                         <PriorityBadge priority={ticket.priority} />
                       </div>
 
@@ -169,7 +216,7 @@ const Kanban = () => {
                         <span
                           className={
                             isOverdue(ticket.due_date) &&
-                            ticket.status !== "done"
+                            ticket.status !== "DONE"
                               ? "text-destructive font-medium"
                               : ""
                           }
@@ -202,6 +249,7 @@ const Kanban = () => {
           }}
           onSubmit={handleCreateOrUpdate}
           ticket={editingTicket}
+          typeTickets={typeTickets}
         />
 
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
