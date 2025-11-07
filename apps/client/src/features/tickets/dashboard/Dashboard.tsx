@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import { useTickets, useCreateTicket, useUpdateTicket, useDeleteTicket } from '../hooks/useTicket';
 import { useTypeTickets } from '@/features/type-tickets/hooks/useTypeTicket';
+import { ensureDDMMYYYY } from '@/utils/dateFormatter';
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -125,7 +126,7 @@ const Dashboard = () => {
       description: ticket.description,
       priority: ticket.priority,
       status: nextStatus,
-      due_date: ticket.due_date,
+      due_date: ensureDDMMYYYY(ticket.due_date),
       type_id: ticket.type_id,
     };
 

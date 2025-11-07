@@ -24,6 +24,7 @@ import type {
   TicketCreateOrUpdate,
 } from "@/types/ticket";
 import type { TypeTicket } from "@/types/";
+import { ensureDDMMYYYY, toInputDateFormat } from "@/utils/dateFormatter";
 
 interface TicketFormProps {
   open: boolean;
@@ -40,31 +41,14 @@ export const TicketForm = ({
   ticket,
   typeTickets,
 }: TicketFormProps) => {
-  const formatDateToYYYYMMDD = (dateString: string): string => {
-    // Convertit DD-MM-YYYY vers YYYY-MM-DD pour l'input date
-    if (!dateString || !dateString.includes("-")) return dateString;
-    const parts = dateString.split("-");
-    if (parts.length === 3 && parts[0].length === 2) {
-      // Format DD-MM-YYYY
-      return `${parts[2]}-${parts[1]}-${parts[0]}`;
-    }
-    return dateString; // Déjà au bon format
-  };
-
   const [formData, setFormData] = useState<TicketCreateOrUpdate>({
     title: ticket?.title || "",
     description: ticket?.description || "",
     priority: ticket?.priority || "MEDIUM",
     status: ticket?.status || "TO_DO",
-    due_date: ticket?.due_date ? formatDateToYYYYMMDD(ticket.due_date) : "",
+    due_date: ticket?.due_date ? toInputDateFormat(ticket.due_date) : "",
     type_id: ticket?.type_id || typeTickets?.[0]?.id || null,
   });
-
-  const formatDateToDDMMYYYY = (dateString: string): string => {
-    // Convertit YYYY-MM-DD vers DD-MM-YYYY
-    const [year, month, day] = dateString.split("-");
-    return `${day}-${month}-${year}`;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +56,7 @@ export const TicketForm = ({
     // Formater les données pour correspondre au schéma serveur
     const submitData: TicketCreateOrUpdate = {
       ...formData,
-      due_date: formatDateToDDMMYYYY(formData.due_date),
+      due_date: ensureDDMMYYYY(formData.due_date),
     };
 
     onSubmit(submitData);

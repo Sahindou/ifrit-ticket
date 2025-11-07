@@ -20,6 +20,7 @@ import { TicketForm } from "@/components/tickets/TicketForm";
 import { toast } from "sonner";
 import { useTickets, useUpdateTicket, useDeleteTicket } from "../hooks/useTicket";
 import { useTypeTickets } from "@/features/type-tickets/hooks/useTypeTicket";
+import { ensureDDMMYYYY } from "@/utils/dateFormatter";
 
 const statusLabels: Record<TicketStatus, string> = {
   TO_DO: "À faire",
@@ -101,7 +102,7 @@ const Kanban = () => {
       description: ticket.description,
       priority: ticket.priority,
       status: newStatus,
-      due_date: ticket.due_date,
+      due_date: ensureDDMMYYYY(ticket.due_date),
       type_id: ticket.type_id,
     };
 
