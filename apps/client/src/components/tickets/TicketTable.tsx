@@ -20,7 +20,7 @@ export const TicketTable = ({ tickets, typeTickets, onEdit, onDelete, onStatusCh
     const dueDate = new Date(ticket.due_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return dueDate < today && ticket.status !== 'done';
+    return dueDate < today && ticket.status !== 'DONE';
   };
 
   const getTypeName = (typeId: string | null) => {

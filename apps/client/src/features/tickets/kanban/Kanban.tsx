@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Ticket, TicketStatus, TicketCreateOrUpdate } from "@/types/ticket";
-import type { TypeTicket } from "@/types/";
 import { TypeBadge, PriorityBadge } from "@/components/tickets/TicketBadges";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
