@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "concurrently \"tsc --watch\" \"tsnd --respawn -r tsconfig-paths/register src/index.ts\"",
     "generate": "drizzle-kit generate --config=src/core/config/drizzle.ts",
-    "migrate": "tsx src/core/config/migrate.ts"
+    "migrate": "tsx src/core/config/migrate.ts",
+    "build": "tsc && tsc-alias"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "drizzle-orm": "^0.44.7",
     "express": "^5.1.0",
     "pg": "^8.16.3",
+    "tsconfig-paths": "^4.2.0",
     "winston": "^3.18.3",
     "zod": "^4.1.12"
   },
@@ -31,6 +33,7 @@
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3"

@@ -1,0 +1,118 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: ifrit-ticket-client
+    networks:
+      - ifrit-ticket-network
+      - proxy  # Ajout du réseau Traefik
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Routeur HTTP avec redirection HTTPS
+      - "traefik.http.routers.ifrit-client.rule=Host(`ticket.ifrit.website`)"
+      - "traefik.http.routers.ifrit-client.entrypoints=http"
+      - "traefik.http.routers.ifrit-client.middlewares=https-redirect"
+      # Routeur HTTPS
+      - "traefik.http.routers.ifrit-client-secure.rule=Host(`ticket.ifrit.website`)"
+      - "traefik.http.routers.ifrit-client-secure.entrypoints=https"
+      - "traefik.http.routers.ifrit-client-secure.tls=true"
+      - "traefik.http.routers.ifrit-client-secure.tls.certresolver=cloudflare"
+      - "traefik.http.services.ifrit-client.loadbalancer.server.port=80"
+      # Middleware de redirection HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+
+  server:
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    container_name: ifrit-ticket-server
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      PORT: ${PORT}
+      ORIGIN: ${ORIGIN}
+    networks:
+      - ifrit-ticket-network
+      - proxy  # Ajout du réseau Traefik
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Routeur HTTP avec redirection HTTPS
+      - "traefik.http.routers.ifrit-server.rule=Host(`api.ticket.ifrit.website`)"
+      - "traefik.http.routers.ifrit-server.entrypoints=http"
+      - "traefik.http.routers.ifrit-server.middlewares=https-redirect"
+      # Routeur HTTPS
+      - "traefik.http.routers.ifrit-server-secure.rule=Host(`api.ticket.ifrit.website`)"
+      - "traefik.http.routers.ifrit-server-secure.entrypoints=https"
+      - "traefik.http.routers.ifrit-server-secure.tls=true"
+      - "traefik.http.routers.ifrit-server-secure.tls.certresolver=cloudflare"
+      - "traefik.http.services.ifrit-server.loadbalancer.server.port=3000"
+      # CORS headers
+      - "traefik.http.middlewares.ifrit-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS,PATCH"
+      - "traefik.http.middlewares.ifrit-cors.headers.accesscontrolalloworiginlist=https://ticket.ifrit.website"
+      - "traefik.http.middlewares.ifrit-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.ifrit-cors.headers.addvaryheader=true"
+
+  db:
+    image: postgres:15-alpine
+    container_name: ifrit-ticket-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+      - ifrit-ticket-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  cache:
+    image: redis:alpine
+    container_name: ifrit-ticket-redis
+    networks:
+      - ifrit-ticket-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  ifrit-ticket-network:
+    driver: bridge
+  proxy:
+    external: true  # Utilise le réseau créé pour Traefik
+
+volumes:
+  data:

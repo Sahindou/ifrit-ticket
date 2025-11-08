@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
-import type { TicketType, TicketPriority, TicketStatus } from '@/types/ticket';
+import type {  TicketPriority, TicketStatus } from '@/types/ticket';
 
-const typeConfig: Record<TicketType, { icon: string; label: string; variant: string }> = {
+const typeConfig: Record<string, { icon: string; label: string; variant: string }> = {
   bug: { icon: '🐛', label: 'Bug', variant: 'destructive' },
   feature: { icon: '📈', label: 'Feature', variant: 'default' },
   update: { icon: '🔄', label: 'Update', variant: 'secondary' },
@@ -9,20 +9,36 @@ const typeConfig: Record<TicketType, { icon: string; label: string; variant: str
 };
 
 const priorityConfig: Record<TicketPriority, { variant: string; className: string }> = {
-  low: { variant: 'outline', className: 'border-success text-success' },
-  medium: { variant: 'outline', className: 'border-warning text-warning' },
-  high: { variant: 'outline', className: 'border-destructive text-destructive' },
-  urgent: { variant: 'destructive', className: 'animate-pulse' },
+  LOW: { variant: 'outline', className: 'border-success text-success' },
+  MEDIUM: { variant: 'outline', className: 'border-warning text-warning' },
+  HIGH: { variant: 'outline', className: 'border-destructive text-destructive' },
 };
 
 const statusConfig: Record<TicketStatus, { label: string; variant: string }> = {
-  todo: { label: 'To Do', variant: 'outline' },
-  in_progress: { label: 'In Progress', variant: 'default' },
-  done: { label: 'Done', variant: 'secondary' },
+  TO_DO: { label: 'To Do', variant: 'outline' },
+  IN_PROGRESS: { label: 'In Progress', variant: 'default' },
+  DONE: { label: 'Done', variant: 'secondary' },
 };
 
-export const TypeBadge = ({ type }: { type: TicketType }) => {
-  const config = typeConfig[type];
+export const TypeBadge = ({ typeId, typeName }: { typeId: string | null; typeName?: string }) => {
+  // Si pas de typeId ou typeName, afficher un badge par défaut
+  if (!typeId || !typeName) {
+    return (
+      <Badge variant="outline">
+        {typeName || 'N/A'}
+      </Badge>
+    );
+  }
+
+  // Essayer de trouver une config par défaut basée sur le nom (optionnel)
+  const lowerName = typeName.toLowerCase();
+  let config = typeConfig[lowerName];
+
+  // Si pas de config trouvée, utiliser une config par défaut
+  if (!config) {
+    config = { icon: '📋', label: typeName, variant: 'default' };
+  }
+
   return (
     <Badge variant={config.variant as any}>
       {config.icon} {config.label}
