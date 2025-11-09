@@ -4,6 +4,7 @@ import { NewTicket, UpdateTicket } from "@/core/database/entities";
 import { eq } from "drizzle-orm";
 import { logger } from "@/shared/utils";
 
+
 export const ticketsModel = {
   create: async (ticket: NewTicket) => {
     try {
