@@ -19,12 +19,12 @@ app.get("/", (_req, res) => {
   // Route de base pour vérifier que le serveur fonctionne
   res.json({
     message: "✅ Ifrit tickets - API en ligne",
-    version: "1.0.0",
+    version: "1.3.0",
     documentation: "non disponible",
     endpoints: {
       tickets: "/tickets",
       typeTickets: "/type-tickets",
-      // auth: "/auth",
+      auth: "/auth",
       // users: "/users",
     },
   });
