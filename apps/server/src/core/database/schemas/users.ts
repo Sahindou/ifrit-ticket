@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, pgEnum, integer } from "drizzle-orm/pg-core";
 
 //* mettre en place un enum pour les roles utilisateurs */
 export const roleEnum = pgEnum("user_role", ["ADMIN", "USER", "MODERATOR"]);
@@ -9,4 +9,5 @@ export const users = pgTable("users", {
   email: varchar("email", {length: 255}).unique().notNull(),
   password: varchar("password", { length: 255 }).notNull(),
   role: roleEnum("role").notNull().default("USER"),
+  tokenVersion: integer("token_version").notNull(),
 });

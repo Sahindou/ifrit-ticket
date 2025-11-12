@@ -8,6 +8,13 @@
       "when": 1762378013376,
       "tag": "0000_windy_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762811057527,
+      "tag": "0001_strange_trish_tilby",
+      "breakpoints": true
     }
   ]
 }

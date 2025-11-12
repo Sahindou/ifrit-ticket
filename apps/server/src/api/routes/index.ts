@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ticketRouter } from "@/features/tickets";
 import { typeTicketRouter } from "@/features/type-tickets";
+import { authRouter } from "@/features/auth/auth.route";
 
 const router = Router();
 
@@ -9,9 +10,10 @@ router.use("/tickets", ticketRouter);
 
 // Monter les routes des types de tickets
 router.use("/type-tickets", typeTicketRouter);
+router.use("/auth", authRouter);
 
-// Ajouter d'autres routes ici au fur et � mesure
+// Ajouter d'autres routes ici au fur et à mesure
 // router.use("/users", userRouter);
-// router.use("/auth", authRouter);
+// 
 
 export default router;

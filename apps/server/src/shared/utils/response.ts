@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { APIResponseType, APIErrorType } from "@/shared/types";
+import { env } from "@/core/config/env";
 
 export const APIResponse = <T = any>(
   response: Response,
@@ -32,4 +33,20 @@ export const APIError = (
     code,
   };
   response.status(status).json(responseBody);
+};
+
+export const APICookie = (
+  response: Response,
+  name: string,
+  value: string,
+  maxAge: number,
+  path?: string
+): void => {
+  response.cookie(name, value, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: maxAge,
+    path: path,
+  });
 };
